@@ -1,7 +1,28 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+    images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'ucvzwhmdqnshhhewbwmc.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/gallery-images/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'ucvzwhmdqnshhhewbwmc.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/location-images/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'ucvzwhmdqnshhhewbwmc.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/activity-images/**',
+      },
+    ],
+  },
 };
 
-export default nextConfig;
+module.exports = nextConfig;

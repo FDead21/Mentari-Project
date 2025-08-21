@@ -7,10 +7,9 @@ type Package = {
     name: string;
     price: number | null;
     min_participants: number | null;
-    locations: { // This matches the table name Supabase returns
-        name: string;
-    }[] | null; // Changed to array since Supabase returns an array
+    locations: { name: string } | null;
 };
+
 
 // This is another async Server Component for fetching data
 export default async function PackagesPage() {
@@ -31,15 +30,13 @@ export default async function PackagesPage() {
         <div className="container mx-auto px-6 py-8">
             <h1 className="text-3xl font-bold mb-6">Our Service Packages</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {packages?.map((pkg: Package) => (
-
+                {packages?.map((pkg) => (
                     <Link href={`/packages/${pkg.id}`} key={pkg.id}>
-
                         <div className="border rounded-lg shadow-sm p-6 flex flex-col h-full hover:shadow-lg transition-shadow cursor-pointer">
                             <h2 className="text-2xl font-semibold">{pkg.name}</h2>
 
                             <p className="text-gray-500 mt-1">
-                                Location: {pkg.locations?.[0]?.name || 'Not specified'}
+                                Location: {(pkg.locations as unknown as { name: string })?.name || 'Not specified'}
                             </p>
 
                             <div className="mt-4 flex-grow">

@@ -4,14 +4,14 @@ import Link from 'next/link';
 import SignOutButton from './SignOutButton'; 
 
 export default async function AdminDashboard() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        async get(name: string) {
-          return (await cookieStore).get(name)?.value;
+        get(name: string) {
+          return cookieStore.get(name)?.value;
         },
       },
     }
@@ -33,13 +33,20 @@ export default async function AdminDashboard() {
         <SignOutButton />
       </div>
       
-      {/* Link to the new package management section */}
+      {/* Updated links for admin sections */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Link href="/admin/packages" className="p-8 bg-gray-100 rounded-lg hover:bg-gray-200">
           <h2 className="text-xl font-bold">Manage Packages</h2>
           <p>Add, edit, or delete service packages.</p>
         </Link>
-        {/* Add links to manage other content here later */}
+        <Link href="/admin/attributes" className="p-8 bg-gray-100 rounded-lg hover:bg-gray-200">
+          <h2 className="text-xl font-bold">Manage Attributes</h2>
+          <p>Manage locations, activities, and facilities.</p>
+        </Link>
+        <Link href="/admin/content" className="p-8 bg-gray-100 rounded-lg hover:bg-gray-200">
+          <h2 className="text-xl font-bold">Manage Content</h2>
+          <p>Edit About Us, Gallery, and Testimonials.</p>
+        </Link>
       </div>
     </div>
   );

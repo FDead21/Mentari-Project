@@ -1,8 +1,7 @@
-// components/InteractiveMap.tsx
-
-'use client'; 
+'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 type Location = {
@@ -10,42 +9,40 @@ type Location = {
   name: string;
   coordinate_x: number | null;
   coordinate_y: number | null;
+  location_images: { image_url: string }[]; // Update type
 };
 
 export default function InteractiveMap({ locations }: { locations: Location[] }) {
+  const imageWidth = 706;
+  const imageHeight = 546;
+
   return (
-    <div className="relative border rounded-lg overflow-hidden">
+    <div className="relative rounded-lg overflow-hidden">
       <TransformWrapper>
-        {/* 1. Add an aspect-ratio class here. 'aspect-video' is 16:9. 
-            You can use 'aspect-[4/3]' for a 4:3 ratio if it fits your image better. */}
         <TransformComponent wrapperClass="!w-full" contentClass="!w-full aspect-[4/3]">
-          
-          {/* 2. Remove the fixed width and height from this div. */}
-          <div className="relative w-full h-full"> 
-            <Image
-              src="/west_java.png" 
-              alt="Map of West Java"
-              layout="fill" // Use layout="fill" for responsive images
-              objectFit="contain" // Use "contain" to ensure the whole map is visible
-            />
-            
-            {/* ... your code for the dots remains the same ... */}
+          <div className="relative w-full h-full">
+            <Image src="/west_java.png" alt="Map of West Java" layout="fill" objectFit="contain" priority />
             {locations.map((location) => (
               location.coordinate_x && location.coordinate_y && (
-                <div
+                <Link
+                  href={`/locations/${location.id}`}
                   key={location.id}
                   className="absolute group"
                   style={{
-                    // We need to use percentages for responsive positioning
-                    left: `${(location.coordinate_x / 706) * 100}%`,
-                    top: `${(location.coordinate_y / 546) * 100}%`,
+                    left: `${(location.coordinate_x / imageWidth) * 100}%`,
+                    top: `${(location.coordinate_y / imageHeight) * 100}%`,
                   }}
                 >
                   <div className="w-4 h-4 bg-orange-500 rounded-full border-2 border-white cursor-pointer transition-transform group-hover:scale-125 -translate-x-1/2 -translate-y-1/2"></div>
-                  <div className="absolute bottom-full mb-2 hidden group-hover:block bg-white text-black text-sm font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap -translate-x-1/2">
-                    {location.name}
+                  <div className="absolute bottom-full mb-2 hidden group-hover:block bg-white rounded-lg shadow-lg overflow-hidden w-128 -translate-x-1/2">
+                    {location.location_images.length > 0 && (
+                      <div className="relative w-full h-64">
+                        <Image src={location.location_images[0].image_url} alt={location.name} fill className="object-cover" />
+                      </div>
+                    )}
+                    <p className="text-black text-sm font-bold p-2 text-center">{location.name}</p>
                   </div>
-                </div>
+                </Link>
               )
             ))}
           </div>
