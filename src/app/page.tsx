@@ -1,103 +1,83 @@
-import Image from "next/image";
+// app/page.tsx
+import './globals.css';
+import { supabase } from '@/lib/supabaseClient';
+import Link from 'next/link';
 
-export default function Home() {
+// Define types for our data
+type Package = {
+  id: string;
+  name: string;
+  price: number | null;
+  locations: { name: string }[] | null;
+};
+
+type Testimonial = {
+  id: string;
+  quote: string;
+  client_name: string;
+  company_name: string | null;
+};
+
+export default async function HomePage() {
+  // We'll run two separate queries to get our data
+  const { data: featuredPackages } = await supabase
+    .from('packages')
+    .select('id, name, price, locations(name)')
+    .eq('is_featured', true) // Only get packages marked as featured
+    .limit(3); // Get a maximum of 3
+
+  const { data: testimonials } = await supabase
+    .from('testimonials')
+    .select('id, quote, client_name, company_name')
+    .eq('is_published', true) // Only get published testimonials
+    .limit(3);
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="container mx-auto px-6 py-8">
+      {/* Hero Section */}
+      <section className="text-center py-16">
+        <h1 className="text-5xl font-bold">Your Adventure Awaits</h1>
+        <p className="text-xl text-gray-600 mt-4">Unforgettable Outbound Experiences in Bandung</p>
+        <Link href="/packages" className="mt-8 inline-block bg-orange-500 text-white font-bold py-3 px-6 rounded-full hover:bg-orange-600">
+          Explore Our Packages
+        </Link>
+      </section>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {/* Featured Packages Section */}
+      <section className="py-12">
+        <h2 className="text-3xl font-bold text-center mb-8">Featured Packages</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {featuredPackages?.map((pkg: Package) => (
+            <Link href={`/packages/${pkg.id}`} key={pkg.id}>
+              <div className="border rounded-lg shadow-sm p-6 h-full hover:shadow-lg transition-shadow">
+                <h3 className="text-2xl font-semibold">{pkg.name}</h3>
+                <p className="text-gray-500 mt-1">{pkg.locations?.[0]?.name}</p>
+                <p className="text-lg font-bold text-blue-600 mt-4">
+                  {pkg.price ? `Rp ${pkg.price.toLocaleString('id-ID')}` : 'Contact for price'}
+                </p>
+              </div>
+            </Link>
+          ))}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="bg-gray-100 py-16">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold">What Our Clients Say</h2>
+          <div className="mt-8 space-y-8">
+            {testimonials?.map((testimonial: Testimonial) => (
+              <blockquote key={testimonial.id} className="max-w-2xl mx-auto">
+                <p className="text-lg italic">"{testimonial.quote}"</p>
+                <cite className="block font-semibold mt-4">
+                  {testimonial.client_name}
+                  {testimonial.company_name && `, ${testimonial.company_name}`}
+                </cite>
+              </blockquote>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
