@@ -9,7 +9,7 @@ export default function AboutPage() {
           Founded in 2025, Mentari Project has been the leading partner for corporate team building, leadership training, and unforgettable outbound experiences in Bandung and the surrounding West Java area.
         </p>
         <p>
-          Our mission is {`"Together We Achieve More."`} We believe that well-designed, fun, and challenging activities can unlock a team's true potential, fostering communication, trust, and a shared sense of purpose.
+          Our mission is {`"Together We Achieve More."`} We believe that well-designed, fun, and challenging activities can unlock a {`Team's`} true potential, fostering communication, trust, and a shared sense of purpose.
         </p>
         <p>
           Our team consists of certified facilitators and safety experts dedicated to providing a safe, engaging, and impactful experience for every client.

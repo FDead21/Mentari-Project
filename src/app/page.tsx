@@ -68,7 +68,7 @@ export default async function HomePage() {
           <div className="mt-8 space-y-8">
             {testimonials?.map((testimonial: Testimonial) => (
               <blockquote key={testimonial.id} className="max-w-2xl mx-auto">
-                <p className="text-lg italic">"{testimonial.quote}"</p>
+                <p className="text-lg italic">&quot;{testimonial.quote}&quot;</p>
                 <cite className="block font-semibold mt-4">
                   {testimonial.client_name}
                   {testimonial.company_name && `, ${testimonial.company_name}`}

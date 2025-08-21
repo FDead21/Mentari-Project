@@ -35,7 +35,7 @@ export default async function GalleryPage() {
         <div className="space-y-8 max-w-3xl mx-auto">
           {testimonials?.map((testimonial) => (
             <blockquote key={testimonial.id} className="p-6 border-l-4 border-orange-500 bg-gray-50">
-              <p className="text-lg italic text-gray-700">"{testimonial.quote}"</p>
+              <p className="text-lg italic text-gray-700">&quot;{testimonial.quote}&quot;</p>
               <cite className="block font-semibold mt-4 text-gray-800">
                 - {testimonial.client_name}
                 {testimonial.company_name && `, ${testimonial.company_name}`}

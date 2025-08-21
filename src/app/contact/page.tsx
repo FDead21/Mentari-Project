@@ -34,7 +34,7 @@ export default function ContactPage() {
     <div className="container mx-auto px-6 py-8 max-w-lg">
       <h1 className="text-3xl font-bold mb-6">Contact Us</h1>
       <p className="text-gray-600 mb-8">
-        Have a question or want a custom quote? Fill out the form below and we'll get back to you as soon as possible.
+        Have a question or want a custom quote? Fill out the form below and {`We'll`} get back to you as soon as possible.
       </p>
 
       {/* The form calls our Server Action directly */}

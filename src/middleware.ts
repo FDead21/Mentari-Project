@@ -1,13 +1,9 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export async function middleware(req: NextRequest) {
-  let response = NextResponse.next({
-    request: {
-      headers: req.headers,
-    },
-  });
+  const res = NextResponse.next();
 
   // Create a Supabase client configured to use cookies
   const supabase = createServerClient(
@@ -18,11 +14,13 @@ export async function middleware(req: NextRequest) {
         get(name: string) {
           return req.cookies.get(name)?.value;
         },
-        set(name: string, value: string, options: CookieOptions) {
-          response.cookies.set({ name, value, ...options });
+        set(name: string, value: string, options) {
+          req.cookies.set({ name, value, ...options });
+          res.cookies.set({ name, value, ...options });
         },
-        remove(name: string, options: CookieOptions) {
-          response.cookies.set({ name, value: '', ...options });
+        remove(name: string, options) {
+          req.cookies.set({ name, value: '', ...options });
+          res.cookies.set({ name, value: '', ...options });
         },
       },
     }
@@ -42,7 +40,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/admin', req.url));
   }
 
-  return response;
+  return res;
 }
 
 // This config ensures the middleware runs on both admin and login pages.
