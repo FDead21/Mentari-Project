@@ -73,7 +73,7 @@ export default async function ManageContentPage() {
 
       {/* About Us Section */}
       <div className="bg-white p-6 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-4">Edit "About Us" Page</h2>
+        <h2 className="text-2xl font-bold mb-4">Edit &quot;About Us&quot; Page</h2>
         <form action={updateAboutUs}>
           <textarea
             name="about_content"

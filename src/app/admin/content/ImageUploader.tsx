@@ -41,8 +41,9 @@ export default function ImageUploader({ addGalleryImageAction }: ImageUploaderPr
       // Call the server action to save the URL to the database
       await addGalleryImageAction(publicUrl);
 
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      setError(errorMessage);
     } finally {
       setUploading(false);
     }

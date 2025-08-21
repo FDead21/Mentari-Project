@@ -9,7 +9,7 @@ type Package = {
   name: string;
   description: string | null;
   price: number | null;
-  locations: { name: string }; // Remove the | null since your data shows it exists
+  locations: { name: string } | { name: string }[] | null;
   activities: { id: string, name: string }[];
   facilities: { id: string, name: string }[];
 };
@@ -31,19 +31,21 @@ export default async function PackageDetailPage({ params }: { params: Promise<{ 
   );
 
   // Fetch a single package by its ID, and all its related activities/facilities
-  const { data: pkg, error } = await supabase
+  const { data, error } = await supabase
     .from('packages')
     .select(`
-      id,
-      name,
-      description,
-      price,
-      locations(name),
-      activities(id, name),
-      facilities(id, name)
-    `)
-    .eq('id', packageId) // Get the package where the ID matches the one in the URL
-    .single(); // .single() ensures we get one object, not an array
+    id,
+    name,
+    description,
+    price,
+    locations(name),
+    activities(id, name),
+    facilities(id, name)
+  `)
+    .eq('id', packageId)
+    .single();
+
+  const pkg = data as Package;
 
   // If there's an error or the package doesn't exist, show a 404 page
   if (error || !pkg) {
@@ -53,11 +55,11 @@ export default async function PackageDetailPage({ params }: { params: Promise<{ 
   return (
     <div className="container mx-auto px-6 py-8">
       <Link href="/packages" className="text-blue-500 hover:underline mb-6 block">&larr; Back to all packages</Link>
-      
+
       <div className="bg-white shadow-lg rounded-lg p-8">
         <h1 className="text-4xl font-bold">{pkg.name}</h1>
         <p className="text-lg text-gray-600 mt-2">
-          Location: {(pkg.locations as unknown as { name: string })?.name || 'Not specified'}
+          Location: {Array.isArray(pkg.locations) ? pkg.locations[0]?.name : pkg.locations?.name || 'Not specified'}
         </p>
         <p className="text-2xl font-bold text-blue-600 mt-4">
           {pkg.price ? `Rp ${pkg.price.toLocaleString('id-ID')}` : 'Price upon request'}

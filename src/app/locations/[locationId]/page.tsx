@@ -4,7 +4,8 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import HomepageCarousel from '@/components/HomepageCarousel'; // Reuse the carousel
 
-export default async function LocationDetailPage({ params }: { params: { locationId: string } }) {
+export default async function LocationDetailPage({ params }: { params: Promise<{ locationId: string }> }) {
+  const { locationId } = await params;
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,7 +16,7 @@ export default async function LocationDetailPage({ params }: { params: { locatio
   const { data: location } = await supabase
     .from('locations')
     .select('*, location_images(*)')
-    .eq('id', params.locationId)
+    .eq('id', locationId)
     .single();
 
   if (!location) {
@@ -31,7 +32,7 @@ export default async function LocationDetailPage({ params }: { params: { locatio
   return (
     <div className="container mx-auto px-6 py-8">
       <Link href="/locations" className="text-blue-500 hover:underline mb-6 block">&larr; Back to all locations</Link>
-      
+
       <div className="bg-white shadow-lg rounded-lg overflow-hidden">
         {galleryImages.length > 0 && (
           <HomepageCarousel images={galleryImages} />

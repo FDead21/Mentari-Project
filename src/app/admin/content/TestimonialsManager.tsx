@@ -42,7 +42,7 @@ export default function TestimonialsManager({ testimonials }: { testimonials: Te
           .from('testimonial-images')
           .upload(fileName, file);
         if (uploadError) throw uploadError;
-        
+
         const { data } = supabase.storage.from('testimonial-images').getPublicUrl(fileName);
         imageUrl = data.publicUrl;
       }
@@ -65,8 +65,8 @@ export default function TestimonialsManager({ testimonials }: { testimonials: Te
       setFile(null);
       (e.target as HTMLFormElement).reset();
 
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
       setUploading(false);
     }
@@ -101,7 +101,7 @@ export default function TestimonialsManager({ testimonials }: { testimonials: Te
               {t.client_image_url && <img src={t.client_image_url} alt={t.client_name} className="w-12 h-12 rounded-full object-cover" />}
               <div>
                 <p className="font-semibold">{t.client_name}</p>
-                <p className="text-sm text-gray-600 italic">"{t.quote}"</p>
+                <p className="text-sm text-gray-600 italic">&quot;{t.quote}&quot;</p>
               </div>
             </div>
             <button onClick={() => handleDelete(t.id, t.client_image_url)} className="text-red-500 hover:text-red-700 text-sm">Delete</button>
