@@ -59,7 +59,8 @@ async function updatePackage(formData: FormData) {
 }
 
 // The page component fetches all the data needed for the edit form
-export default async function EditPackagePage({ params }: { params: { packageId: string } }) {
+export default async function EditPackagePage({ params }: { params: Promise<{ packageId: string }> }) {
+  const { packageId } = await params;
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -70,12 +71,12 @@ export default async function EditPackagePage({ params }: { params: { packageId:
       },
     }
   );
-  
+
   // Fetch the specific package to edit, including its related activities and facilities
   const { data: pkg } = await supabase
     .from('packages')
     .select('*, package_activities(activity_id), package_facilities(facility_id)')
-    .eq('id', params.packageId)
+    .eq('id', packageId)
     .single();
 
   if (!pkg) {
@@ -88,15 +89,15 @@ export default async function EditPackagePage({ params }: { params: { packageId:
   const { data: facilities } = await supabase.from('facilities').select('id, name');
 
   // Get the IDs of currently selected activities/facilities to pre-check the boxes
-  const selectedActivityIds = new Set(pkg.package_activities.map((pa: { activity_id: any; }) => pa.activity_id));
-  const selectedFacilityIds = new Set(pkg.package_facilities.map((pf: { facility_id: any; }) => pf.facility_id));
+  const selectedActivityIds = new Set(pkg.package_activities.map((pa: { activity_id: string; }) => pa.activity_id));
+  const selectedFacilityIds = new Set(pkg.package_facilities.map((pf: { facility_id: string; }) => pf.facility_id));
 
   return (
     <div className="container mx-auto p-8">
       <h1 className="text-3xl font-bold mb-8">Edit Package: {pkg.name}</h1>
       <form action={updatePackage} className="max-w-2xl space-y-6">
         <input type="hidden" name="packageId" value={pkg.id} />
-        
+
         {/* Basic Info */}
         <div>
           <label htmlFor="name">Package Name</label>

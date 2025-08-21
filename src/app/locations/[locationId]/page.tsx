@@ -23,7 +23,7 @@ export default async function LocationDetailPage({ params }: { params: Promise<{
     notFound();
   }
 
-  const galleryImages = location.location_images.map((img: { id: any; image_url: any; }) => ({
+  const galleryImages = location.location_images.map((img: { id: string; image_url: string; }) => ({
     id: img.id,
     image_url: img.image_url,
     caption: location.name,
