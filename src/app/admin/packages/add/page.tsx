@@ -1,17 +1,32 @@
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient'; // Keep this for fetching form data
 
 // This Server Action will handle the form submission
 async function addPackage(formData: FormData) {
   'use server';
 
-  // Create an authenticated Supabase client for the server action
-  const supabaseAdmin = createServerActionClient({ cookies });
+  const cookieStore = await cookies();
+  // This is the correct way to create an authenticated client in a Server Action
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          cookieStore.set({ name, value, ...options });
+        },
+        remove(name: string, options: CookieOptions) {
+          cookieStore.set({ name, value: '', ...options });
+        },
+      },
+    }
+  );
 
-  // 1. Get basic package data from the form
   const packageData = {
     name: formData.get('name') as string,
     description: formData.get('description') as string,
@@ -21,49 +36,51 @@ async function addPackage(formData: FormData) {
     is_featured: formData.get('is_featured') === 'on',
   };
 
-  // 2. Insert the new package and get its ID using the authenticated client
-  const { data: newPackage, error } = await supabaseAdmin
+  const { data: newPackage, error } = await supabase
     .from('packages')
     .insert(packageData)
     .select('id')
     .single();
 
-  if (error || !newPackage) {
+  if (error) {
+    // For now, we'll log the error. A real app might redirect with an error message.
     console.error('Error creating package:', error);
-    // You could display an error message to the user here
     return;
   }
 
-  // 3. Get selected activities and facilities
   const activityIds = formData.getAll('activity_ids') as string[];
   const facilityIds = formData.getAll('facility_ids') as string[];
 
-  // 4. Prepare and insert rows into join tables using the authenticated client
   if (activityIds.length > 0) {
-    const packageActivities = activityIds.map(activity_id => ({
-      package_id: newPackage.id,
-      activity_id,
-    }));
-    await supabaseAdmin.from('package_activities').insert(packageActivities);
+    const packageActivities = activityIds.map(activity_id => ({ package_id: newPackage.id, activity_id }));
+    await supabase.from('package_activities').insert(packageActivities);
   }
 
   if (facilityIds.length > 0) {
-    const packageFacilities = facilityIds.map(facility_id => ({
-      package_id: newPackage.id,
-      facility_id,
-    }));
-    await supabaseAdmin.from('package_facilities').insert(packageFacilities);
+    const packageFacilities = facilityIds.map(facility_id => ({ package_id: newPackage.id, facility_id }));
+    await supabase.from('package_facilities').insert(packageFacilities);
   }
 
-  // 5. Revalidate the path to show the new package in the list and redirect
   revalidatePath('/admin/packages');
   redirect('/admin/packages');
 }
 
 // The page component itself fetches the data needed for the form
 export default async function AddPackagePage() {
-  // Fetch all locations, activities, and facilities for the form options
-  // Reading data is public, so the regular client is fine here.
+  const cookieStore = await cookies();
+  // We need an authenticated client here too, to fetch data
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
+
   const { data: locations } = await supabase.from('locations').select('id, name');
   const { data: activities } = await supabase.from('activities').select('id, name');
   const { data: facilities } = await supabase.from('facilities').select('id, name');

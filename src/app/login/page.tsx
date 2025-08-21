@@ -1,6 +1,4 @@
-// app/login/page.tsx
-
-'use client'; // This must be a Client Component for handling user input and state
+'use client'; 
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -25,7 +23,7 @@ export default function LoginPage() {
     if (error) {
       setError(error.message);
     } else {
-      // On successful login, redirect to the admin dashboard
+      router.refresh();
       router.push('/admin');
     }
   };
