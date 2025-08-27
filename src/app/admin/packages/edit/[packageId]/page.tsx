@@ -3,6 +3,8 @@ import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { notFound } from 'next/navigation';
+import BackButton from '@/components/admin/BackButton';
+
 
 // This Server Action handles the form submission for UPDATING a package
 async function updatePackage(formData: FormData) {
@@ -94,6 +96,7 @@ export default async function EditPackagePage({ params }: { params: Promise<{ pa
 
   return (
     <div className="container mx-auto p-8">
+      <BackButton href="/admin/packages" title="Manage Package" />
       <h1 className="text-3xl font-bold mb-8">Edit Package: {pkg.name}</h1>
       <form action={updatePackage} className="max-w-2xl space-y-6">
         <input type="hidden" name="packageId" value={pkg.id} />

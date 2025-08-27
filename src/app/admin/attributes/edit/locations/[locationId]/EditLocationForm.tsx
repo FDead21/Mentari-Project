@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import CoordinatePicker from './CoordinatePicker';
+import SubmitButton from '@/components/admin/SubmitButton'; 
+import toast from 'react-hot-toast'; 
 
 type LocationImage = { id: string; image_url: string; };
 type Location = {
@@ -22,51 +24,58 @@ export default function EditLocationForm({ location }: { location: Location }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Safe access to location_images
   const locationImages = location.location_images || [];
 
   const handleCoordinatesChange = (newCoords: { x: number; y: number }) => {
     setCoords(newCoords);
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
     const formData = new FormData(event.currentTarget);
-    
-    await supabase
-      .from('locations')
-      .update({
-        name: formData.get('name') as string,
-        address: formData.get('address') as string,
-        description: formData.get('description') as string,
-        coordinate_x: coords.x,
-        coordinate_y: coords.y,
-      })
-      .eq('id', location.id);
 
-    const imageFiles = formData.getAll('images') as File[];
-    const filesToUpload = imageFiles.filter(file => file.size > 0);
+    const promise = new Promise(async (resolve, reject) => {
+      const { error: updateError } = await supabase
+        .from('locations')
+        .update({
+          name: formData.get('name') as string,
+          address: formData.get('address') as string,
+          description: formData.get('description') as string,
+          coordinate_x: coords.x,
+          coordinate_y: coords.y,
+        })
+        .eq('id', location.id);
 
-    if (filesToUpload.length > 0) {
-      for (const file of filesToUpload) {
-        const fileName = `${location.id}-${Date.now()}-${file.name}`;
-        const { error: uploadError } = await supabase.storage.from('location-images').upload(fileName, file);
+      if (updateError) return reject(updateError); 
 
-        if (uploadError) {
-          setError(`Error uploading ${file.name}: ${uploadError.message}`);
-          setIsSubmitting(false);
-          return;
+      const imageFiles = formData.getAll('images') as File[];
+      const filesToUpload = imageFiles.filter(file => file.size > 0);
+
+      if (filesToUpload.length > 0) {
+        for (const file of filesToUpload) {
+          const fileName = `${location.id}-${Date.now()}-${file.name}`;
+          const { error: uploadError } = await supabase.storage.from('location-images').upload(fileName, file);
+
+          if (uploadError) {
+            return reject(uploadError); 
+          }
+
+          const { data: { publicUrl } } = supabase.storage.from('location-images').getPublicUrl(fileName);
+          await supabase.from('location_images').insert({ location_id: location.id, image_url: publicUrl });
         }
-
-        const { data: { publicUrl } } = supabase.storage.from('location-images').getPublicUrl(fileName);
-        await supabase.from('location_images').insert({ location_id: location.id, image_url: publicUrl });
       }
-    }
+      
+      resolve('Success');
+    });
 
-    router.refresh();
-    setIsSubmitting(false);
+    toast.promise(promise, {
+      loading: 'Saving location...',
+      success: () => {
+        router.refresh();
+        return 'Location saved successfully!'; 
+      },
+      error: (err) => `Error: ${err.message}`,
+    });
   };
 
   const handleDeleteImage = async (image: LocationImage) => {
@@ -132,9 +141,7 @@ export default function EditLocationForm({ location }: { location: Location }) {
         </div>
       </div>
 
-      <button type="submit" disabled={isSubmitting} className="px-6 py-2 font-bold text-white bg-green-500 rounded-md hover:bg-green-600 disabled:bg-gray-400">
-        {isSubmitting ? 'Saving...' : 'Update Location'}
-      </button>
+      <SubmitButton>Update Location</SubmitButton>
       {error && <p className="text-red-500 mt-4">{error}</p>}
     </form>
   );

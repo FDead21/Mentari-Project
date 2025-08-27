@@ -2,6 +2,7 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import Link from 'next/link';
+import BackButton from '@/components/admin/BackButton';
 
 // --- SERVER ACTIONS ---
 async function addAttribute(formData: FormData) {
@@ -68,6 +69,7 @@ export default async function ManageAttributesPage() {
   const { data: facilities } = await supabase.from('facilities').select('id, name');
   return (
     <div className="container mx-auto p-8">
+    <BackButton href="/admin" title="Dashboard" /> 
       <h1 className="text-3xl font-bold mb-8">Manage Package Attributes</h1>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <ManagementSection title="Locations" tableName="locations" attributes={locations || []} />

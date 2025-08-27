@@ -2,27 +2,21 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import BackButton from '@/components/admin/BackButton';
 
 // This Server Action will handle the form submission
 async function addPackage(formData: FormData) {
   'use server';
 
   const cookieStore = await cookies();
-  // This is the correct way to create an authenticated client in a Server Action
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          cookieStore.set({ name, value, ...options });
-        },
-        remove(name: string, options: CookieOptions) {
-          cookieStore.set({ name, value: '', ...options });
-        },
+        get(name: string) { return cookieStore.get(name)?.value; },
+        set(name: string, value: string, options: CookieOptions) { cookieStore.set({ name, value, ...options }); },
+        remove(name: string, options: CookieOptions) { cookieStore.set({ name, value: '', ...options }); },
       },
     }
   );
@@ -43,7 +37,6 @@ async function addPackage(formData: FormData) {
     .single();
 
   if (error) {
-    // For now, we'll log the error. A real app might redirect with an error message.
     console.error('Error creating package:', error);
     return;
   }
@@ -52,12 +45,18 @@ async function addPackage(formData: FormData) {
   const facilityIds = formData.getAll('facility_ids') as string[];
 
   if (activityIds.length > 0) {
-    const packageActivities = activityIds.map(activity_id => ({ package_id: newPackage.id, activity_id }));
+    const packageActivities = activityIds.map(activity_id => ({
+      package_id: newPackage.id,
+      activity_id,
+    }));
     await supabase.from('package_activities').insert(packageActivities);
   }
 
   if (facilityIds.length > 0) {
-    const packageFacilities = facilityIds.map(facility_id => ({ package_id: newPackage.id, facility_id }));
+    const packageFacilities = facilityIds.map(facility_id => ({
+      package_id: newPackage.id,
+      facility_id,
+    }));
     await supabase.from('package_facilities').insert(packageFacilities);
   }
 
@@ -68,17 +67,10 @@ async function addPackage(formData: FormData) {
 // The page component itself fetches the data needed for the form
 export default async function AddPackagePage() {
   const cookieStore = await cookies();
-  // We need an authenticated client here too, to fetch data
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-      },
-    }
+    { cookies: { get(name: string) { return cookieStore.get(name)?.value; } } }
   );
 
   const { data: locations } = await supabase.from('locations').select('id, name');
@@ -87,6 +79,7 @@ export default async function AddPackagePage() {
 
   return (
     <div className="container mx-auto p-8">
+      <BackButton href="/admin/packages" title="Manage Package" />
       <h1 className="text-3xl font-bold mb-8">Add New Package</h1>
       <form action={addPackage} className="max-w-2xl space-y-6">
         {/* Basic Info */}

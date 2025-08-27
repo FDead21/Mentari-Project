@@ -1,8 +1,8 @@
 import Link from 'next/link';
 
-export default function WhatsAppButton() {
-  // IMPORTANT: Replace this with your company's WhatsApp number in international format
-  const phoneNumber = '6282320124688';
+export default function WhatsAppButton({ phoneNumber }: { phoneNumber: string | null | undefined }) {
+  // Use the number from props, or a default fallback
+  const number = phoneNumber || '6281234567890'; 
 
   const message = "Hello, I'm interested in your outbound packages.";
   const encodedMessage = encodeURIComponent(message);
@@ -12,7 +12,6 @@ export default function WhatsAppButton() {
       href={`https://wa.me/${phoneNumber}?text=${encodedMessage}`}
       target="_blank"
       rel="noopener noreferrer"
-      // These classes create the new "pill" style
       className="fixed bottom-5 right-5 z-50 flex items-center gap-3 bg-gray-100 text-gray-700 font-semibold px-4 py-2 rounded-full shadow-lg hover:bg-gray-200 transition-all"
       aria-label="Chat on WhatsApp"
     >

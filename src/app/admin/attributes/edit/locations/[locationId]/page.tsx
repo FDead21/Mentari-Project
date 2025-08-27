@@ -2,6 +2,7 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import EditLocationForm from './EditLocationForm';
+import BackButton from '@/components/admin/BackButton';
 
 export default async function EditLocationPage({ params }: { params: Promise<{ locationId: string }> }) {
   const { locationId } = await params;
@@ -31,6 +32,7 @@ export default async function EditLocationPage({ params }: { params: Promise<{ l
 
   return (
     <div className="container mx-auto p-8">
+      <BackButton href="/admin/attributes" title="Manage Package Attributes" />
       <h1 className="text-3xl font-bold mb-8">Edit Location: {location.name}</h1>
       <EditLocationForm location={location} />
     </div>

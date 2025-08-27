@@ -11,7 +11,7 @@ export default function Footer() {
             <p className="font-bold">Mentari Project</p>
             <p className="text-sm text-gray-400">&copy; {new Date().getFullYear()} All Rights Reserved.</p>
           </div>
-          <div className="flex space-x-4">
+          <div className="flex space-x-4 mr-24">
             <Link href="/packages" className="hover:text-orange-400">Packages</Link>
             <Link href="/locations" className="hover:text-orange-400">Locations</Link>
             <Link href="/contact" className="hover:text-orange-400">Contact</Link>

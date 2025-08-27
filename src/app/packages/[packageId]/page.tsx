@@ -2,20 +2,42 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import HomepageCarousel from '@/components/HomepageCarousel'; // Reuse the carousel
 
-// Define types for our data
+// Define types for our data - Fixed the type definition
+type LocationImage = {
+  id: string;
+  image_url: string;
+};
+
+type Location = {
+  name: string;
+  location_images: LocationImage[];
+};
+
+type Activity = {
+  id: string;
+  name: string;
+};
+
+type Facility = {
+  id: string;
+  name: string;
+};
+
 type Package = {
   id: string;
   name: string;
   description: string | null;
   price: number | null;
-  locations: { name: string } | { name: string }[] | null;
-  activities: { id: string, name: string }[];
-  facilities: { id: string, name: string }[];
+  locations: Location | null; // This is a single location object, not an array
+  activities: Activity[];
+  facilities: Facility[];
 };
 
 // This function receives 'params' which contains the dynamic part of the URL
 export default async function PackageDetailPage({ params }: { params: Promise<{ packageId: string }> }) {
+  // Await params as required by Next.js 15
   const { packageId } = await params;
   const cookieStore = await cookies();
   const supabase = createServerClient(
@@ -30,58 +52,74 @@ export default async function PackageDetailPage({ params }: { params: Promise<{ 
     }
   );
 
-  // Fetch a single package by its ID, and all its related activities/facilities
-  const { data, error } = await supabase
+  // Update the query to fetch location images
+  const { data: pkg, error } = await supabase
     .from('packages')
     .select(`
-    id,
-    name,
-    description,
-    price,
-    locations(name),
-    activities(id, name),
-    facilities(id, name)
-  `)
+      id, name, description, price,
+      locations(name, location_images(id, image_url)),
+      activities(id, name),
+      facilities(id, name)
+    `)
     .eq('id', packageId)
     .single();
 
-  const pkg = data as Package;
-
-  // If there's an error or the package doesn't exist, show a 404 page
   if (error || !pkg) {
     notFound();
   }
 
+  // Debug: Log the data to see what we're getting
+  console.log('Package data:', JSON.stringify(pkg, null, 2));
+  console.log('Locations:', pkg.locations);
+
+  // Prepare images for the carousel - locations is a single object, not an array
+  const locationImages = pkg.locations?.location_images?.map((img: LocationImage) => ({
+    id: img.id,
+    image_url: img.image_url,
+    caption: pkg.locations?.name || 'Location image',
+  })) || [];
+  
+  console.log('Location images:', locationImages);
+
   return (
     <div className="container mx-auto px-6 py-8">
       <Link href="/packages" className="text-blue-500 hover:underline mb-6 block">&larr; Back to all packages</Link>
-
-      <div className="bg-white shadow-lg rounded-lg p-8">
-        <h1 className="text-4xl font-bold">{pkg.name}</h1>
-        <p className="text-lg text-gray-600 mt-2">
-          Location: {Array.isArray(pkg.locations) ? pkg.locations[0]?.name : pkg.locations?.name || 'Not specified'}
-        </p>
-        <p className="text-2xl font-bold text-blue-600 mt-4">
-          {pkg.price ? `Rp ${pkg.price.toLocaleString('id-ID')}` : 'Price upon request'}
-        </p>
-        <p className="text-md text-gray-500 mt-2">{pkg.description}</p>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-          <div>
-            <h2 className="text-2xl font-semibold">Included Activities:</h2>
-            <ul className="list-disc list-inside mt-4 space-y-2">
-              {pkg.activities.map(activity => (
-                <li key={activity.id}>{activity.name}</li>
-              ))}
-            </ul>
+      
+      <div className="bg-white shadow-lg rounded-lg overflow-hidden">
+        {/* Add the location image carousel here */}
+        {locationImages.length > 0 && (
+          <div className="mb-8">
+            <HomepageCarousel images={locationImages} />
           </div>
-          <div>
-            <h2 className="text-2xl font-semibold">Included Facilities:</h2>
-            <ul className="list-disc list-inside mt-4 space-y-2">
-              {pkg.facilities.map(facility => (
-                <li key={facility.id}>{facility.name}</li>
-              ))}
-            </ul>
+        )}
+        
+        <div className="p-8">
+          <h1 className="text-4xl font-bold">{pkg.name}</h1>
+          <p className="text-lg text-gray-600 mt-2">
+            Location: {pkg.locations?.name || 'Not specified'}
+          </p>
+          <p className="text-2xl font-bold text-blue-600 mt-4">
+            {pkg.price ? `Rp ${pkg.price.toLocaleString('id-ID')}` : 'Price upon request'}
+          </p>
+          <p className="text-md text-gray-500 mt-2">{pkg.description}</p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+            <div>
+              <h2 className="text-2xl font-semibold">Included Activities:</h2>
+              <ul className="list-disc list-inside mt-4 space-y-2">
+                {pkg.activities.map(activity => (
+                  <li key={activity.id}>{activity.name}</li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h2 className="text-2xl font-semibold">Included Facilities:</h2>
+              <ul className="list-disc list-inside mt-4 space-y-2">
+                {pkg.facilities.map(facility => (
+                  <li key={facility.id}>{facility.name}</li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </div>

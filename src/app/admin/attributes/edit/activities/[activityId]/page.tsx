@@ -1,7 +1,8 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
-import EditActivityForm from './EditActivityForm'; // We'll create this next
+import EditActivityForm from './EditActivityForm'; 
+import BackButton from '@/components/admin/BackButton';
 
 export default async function EditActivityPage({ params }: { params: { activityId: string } }) {
   const cookieStore = await cookies();
@@ -23,6 +24,7 @@ export default async function EditActivityPage({ params }: { params: { activityI
 
   return (
     <div className="container mx-auto p-8">
+      <BackButton href="/admin/attributes" title="Manage Package Attributes" />
       <h1 className="text-3xl font-bold mb-8">Edit Activity: {activity.name}</h1>
       <EditActivityForm activity={activity} />
     </div>
