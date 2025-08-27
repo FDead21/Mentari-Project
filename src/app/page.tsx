@@ -15,7 +15,7 @@ type HeroSlide = { image_url: string; };
 
 export default async function HomePage() {
   // Corrected line: removed 'await'
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, { cookies: { get(name: string) { return cookieStore.get(name)?.value; } } });
 
   const { data: settings } = await supabase.from('site_content').select('*');
