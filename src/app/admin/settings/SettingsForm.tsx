@@ -140,7 +140,7 @@ export default function SettingsForm({ settings, updateSettingsAction, updateLog
                 defaultValue={settingsMap.get('whatsapp_number') || ''} 
                 className="w-full mt-1 p-2 border rounded" 
               />
-              <p className="text-xs text-gray-500 mt-1">Use international format without '+', e.g., 6281234567890</p>
+              <p className="text-xs text-gray-500 mt-1">Use international format without &apos;+&apos;, e.g., 6281234567890</p>
             </div>
           </div>
         </div>
