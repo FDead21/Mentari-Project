@@ -2,9 +2,9 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import HomepageCarousel from '@/components/HomepageCarousel'; // Reuse the carousel
+import HomepageCarousel from '@/components/HomepageCarousel';
 
-// Define types for our data - Fixed the type definition
+// Define types for our data - Updated to match Supabase response
 type LocationImage = {
   id: string;
   image_url: string;
@@ -12,7 +12,7 @@ type LocationImage = {
 
 type Location = {
   name: string;
-  location_images: LocationImage[];
+  location_images?: LocationImage[]; // Made optional since it might not always be present
 };
 
 type Activity = {
@@ -30,7 +30,7 @@ type Package = {
   name: string;
   description: string | null;
   price: number | null;
-  locations: Location | null; // This is a single location object, not an array
+  locations: Location | null;
   activities: Activity[];
   facilities: Facility[];
 };
@@ -68,15 +68,18 @@ export default async function PackageDetailPage({ params }: { params: Promise<{ 
     notFound();
   }
 
-  // Debug: Log the data to see what we're getting
-  console.log('Package data:', JSON.stringify(pkg, null, 2));
-  console.log('Locations:', pkg.locations);
+  // Cast the data to our Package type to ensure type safety
+  const packageData = pkg as unknown as Package;
 
-  // Prepare images for the carousel - locations is a single object, not an array
-  const locationImages = pkg.locations?.location_images?.map((img: LocationImage) => ({
+  // Debug: Log the data to see what we're getting
+  console.log('Package data:', JSON.stringify(packageData, null, 2));
+  console.log('Locations:', packageData.locations);
+
+  // Prepare images for the carousel with safe optional chaining
+  const locationImages = packageData.locations?.location_images?.map((img: LocationImage) => ({
     id: img.id,
     image_url: img.image_url,
-    caption: pkg.locations?.name || 'Location image',
+    caption: packageData.locations?.name || 'Location image',
   })) || [];
   
   console.log('Location images:', locationImages);
@@ -94,20 +97,20 @@ export default async function PackageDetailPage({ params }: { params: Promise<{ 
         )}
         
         <div className="p-8">
-          <h1 className="text-4xl font-bold">{pkg.name}</h1>
+          <h1 className="text-4xl font-bold">{packageData.name}</h1>
           <p className="text-lg text-gray-600 mt-2">
-            Location: {pkg.locations?.name || 'Not specified'}
+            Location: {packageData.locations?.name || 'Not specified'}
           </p>
           <p className="text-2xl font-bold text-blue-600 mt-4">
-            {pkg.price ? `Rp ${pkg.price.toLocaleString('id-ID')}` : 'Price upon request'}
+            {packageData.price ? `Rp ${packageData.price.toLocaleString('id-ID')}` : 'Price upon request'}
           </p>
-          <p className="text-md text-gray-500 mt-2">{pkg.description}</p>
+          <p className="text-md text-gray-500 mt-2">{packageData.description}</p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
             <div>
               <h2 className="text-2xl font-semibold">Included Activities:</h2>
               <ul className="list-disc list-inside mt-4 space-y-2">
-                {pkg.activities.map(activity => (
+                {packageData.activities.map(activity => (
                   <li key={activity.id}>{activity.name}</li>
                 ))}
               </ul>
@@ -115,7 +118,7 @@ export default async function PackageDetailPage({ params }: { params: Promise<{ 
             <div>
               <h2 className="text-2xl font-semibold">Included Facilities:</h2>
               <ul className="list-disc list-inside mt-4 space-y-2">
-                {pkg.facilities.map(facility => (
+                {packageData.facilities.map(facility => (
                   <li key={facility.id}>{facility.name}</li>
                 ))}
               </ul>
