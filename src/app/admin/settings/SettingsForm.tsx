@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import Image from 'next/image';
 
 // Define the types for the data passed to this component
 type SiteSetting = {
@@ -29,7 +30,7 @@ export default function SettingsForm({ settings, updateSettingsAction, updateLog
     setIsClient(true);
   }, []);
 
-  const onDragEnd = (result: any) => {
+  const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
     const items = Array.from(sections);
     const [reorderedItem] = items.splice(result.source.index, 1);
@@ -45,13 +46,27 @@ export default function SettingsForm({ settings, updateSettingsAction, updateLog
     }
   };
 
+  const logoUrl = settingsMap.get('logo_url') || '';
+
   return (
     <div className="space-y-12">
       {/* Logo Form */}
       <form action={updateLogoAction} className="bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-2xl font-bold mb-4">Site Logo</h2>
         <div className="flex items-center gap-4">
-          <img src={settingsMap.get('logo_url') || ''} alt="Current logo" className="h-16 w-16 object-contain bg-gray-200 p-2 rounded" />
+          {logoUrl ? (
+            <Image 
+              src={logoUrl} 
+              alt="Current logo" 
+              width={64}
+              height={64}
+              className="h-16 w-16 object-contain bg-gray-200 p-2 rounded" 
+            />
+          ) : (
+            <div className="h-16 w-16 bg-gray-200 p-2 rounded flex items-center justify-center">
+              <span className="text-gray-400 text-xs">No logo</span>
+            </div>
+          )}
           <div className="flex-grow">
             <label htmlFor="logo-upload" className="cursor-pointer bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-md hover:bg-gray-300">
               Choose File
@@ -63,37 +78,68 @@ export default function SettingsForm({ settings, updateSettingsAction, updateLog
         </div>
       </form>
 
+      {/* Contact Info Form */}
       <form action={updateSettingsAction} className="bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-2xl font-bold mb-4">Homepage & Contact Info</h2>
         <div className="space-y-4">
-          {/* Hero Title & Subtitle (no changes) */}
+          {/* Hero Title & Subtitle */}
           <div>
-            <label>Hero Title</label>
-            <input name="hero_title" defaultValue={settingsMap.get('hero_title') || ''} className="w-full mt-1 p-2 border rounded" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Hero Title</label>
+            <input 
+              name="hero_title" 
+              type="text"
+              defaultValue={settingsMap.get('hero_title') || ''} 
+              className="w-full mt-1 p-2 border rounded" 
+            />
           </div>
           <div>
-            <label>Hero Subtitle</label>
-            <input name="hero_subtitle" defaultValue={settingsMap.get('hero_subtitle') || ''} className="w-full mt-1 p-2 border rounded" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Hero Subtitle</label>
+            <input 
+              name="hero_subtitle" 
+              type="text"
+              defaultValue={settingsMap.get('hero_subtitle') || ''} 
+              className="w-full mt-1 p-2 border rounded" 
+            />
           </div>
 
-          {/* ADD THESE NEW FIELDS for Contact Info */}
+          {/* Contact Info Fields */}
           <div className="pt-4 border-t">
             <h3 className="text-lg font-semibold mb-2">Contact Page Details</h3>
             <div>
-              <label>Address</label>
-              <input name="contact_address" defaultValue={settingsMap.get('contact_address') || ''} className="w-full mt-1 p-2 border rounded" />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+              <input 
+                name="contact_address" 
+                type="text"
+                defaultValue={settingsMap.get('contact_address') || ''} 
+                className="w-full mt-1 p-2 border rounded" 
+              />
             </div>
             <div>
-              <label>Email</label>
-              <input type="email" name="contact_email" defaultValue={settingsMap.get('contact_email') || ''} className="w-full mt-1 p-2 border rounded" />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input 
+                type="email" 
+                name="contact_email" 
+                defaultValue={settingsMap.get('contact_email') || ''} 
+                className="w-full mt-1 p-2 border rounded" 
+              />
             </div>
             <div>
-              <label>Phone Number</label>
-              <input type="tel" name="contact_phone" defaultValue={settingsMap.get('contact_phone') || ''} className="w-full mt-1 p-2 border rounded" />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+              <input 
+                type="tel" 
+                name="contact_phone" 
+                defaultValue={settingsMap.get('contact_phone') || ''} 
+                className="w-full mt-1 p-2 border rounded" 
+              />
             </div>
             <div>
-              <label>WhatsApp Number</label>
-              <input type="tel" name="whatsapp_number" defaultValue={settingsMap.get('whatsapp_number') || ''} className="w-full mt-1 p-2 border rounded" />
+              <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp Number</label>
+              <input 
+                type="tel" 
+                name="whatsapp_number" 
+                defaultValue={settingsMap.get('whatsapp_number') || ''} 
+                className="w-full mt-1 p-2 border rounded" 
+              />
               <p className="text-xs text-gray-500 mt-1">Use international format without '+', e.g., 6281234567890</p>
             </div>
           </div>
@@ -101,21 +147,30 @@ export default function SettingsForm({ settings, updateSettingsAction, updateLog
         <button type="submit" className="mt-6 px-4 py-2 font-bold text-white bg-green-500 rounded-md hover:bg-green-600">Save Settings</button>
       </form>
 
-
-      {/* Hero & Sections Form */}
+      {/* Homepage Section Order Form */}
       <form action={updateSettingsAction} className="bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-2xl font-bold mb-4">Homepage Content</h2>
         <div className="space-y-4">
           <div>
-            <label>Hero Title</label>
-            <input name="hero_title" defaultValue={settingsMap.get('hero_title') || ''} className="w-full mt-1 p-2 border rounded" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Hero Title</label>
+            <input 
+              name="hero_title" 
+              type="text"
+              defaultValue={settingsMap.get('hero_title') || ''} 
+              className="w-full mt-1 p-2 border rounded" 
+            />
           </div>
           <div>
-            <label>Hero Subtitle</label>
-            <input name="hero_subtitle" defaultValue={settingsMap.get('hero_subtitle') || ''} className="w-full mt-1 p-2 border rounded" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Hero Subtitle</label>
+            <input 
+              name="hero_subtitle" 
+              type="text"
+              defaultValue={settingsMap.get('hero_subtitle') || ''} 
+              className="w-full mt-1 p-2 border rounded" 
+            />
           </div>
           <div>
-            <label className="block mb-2">Homepage Section Order</label>
+            <label className="block mb-2 text-sm font-medium text-gray-700">Homepage Section Order</label>
             {isClient && (
               <DragDropContext onDragEnd={onDragEnd}>
                 <Droppable droppableId="sections">
